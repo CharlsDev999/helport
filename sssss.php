@@ -317,7 +317,12 @@ if (!is_dir($uploadDir)) {
     // === END HOLIDAY MODULE HELPERS ===
 
     function isLoggedIn() {
-        return isset($_SESSION['user_id']) && isset($_SESSION['role']);
+        // Check if user is fully logged in (not pending 2FA verification)
+        return isset($_SESSION['user_id']) && isset($_SESSION['role']) && !isset($_SESSION['requires_2fa']);
+    }
+    function isPending2FA() {
+        // Check if user has completed password auth but needs 2FA verification
+        return isset($_SESSION['requires_2fa']) && $_SESSION['requires_2fa'] === true;
     }
     function generateCSRFToken() {
         if (!isset($_SESSION['csrf_token'])) {
@@ -1643,6 +1648,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             last_attempt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_ip (ip)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+            // === 2FA CODES TABLE ===
+            $pdo->exec("CREATE TABLE IF NOT EXISTS two_factor_codes (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            code VARCHAR(6) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            expires_at TIMESTAMP NOT NULL,
+            is_used TINYINT DEFAULT 0,
+            INDEX idx_user (user_id),
+            INDEX idx_code (code),
+            INDEX idx_expires (expires_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             $pdo->exec("CREATE TABLE IF NOT EXISTS notifications (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
@@ -1726,6 +1743,7 @@ if ($pdo) {
         name VARCHAR(100) NOT NULL,
         employee_id VARCHAR(50) UNIQUE NOT NULL,
         joined_date DATE NULL,  // ✅ ADD THIS LINE
+        email VARCHAR(255) NULL,
             position VARCHAR(100),
             department VARCHAR(100),
             role VARCHAR(20) DEFAULT 'Employee',
@@ -1744,6 +1762,12 @@ if ($pdo) {
     } catch (Exception $e) {
         // Column might already exist, that's okay
         error_log("Migration Note: joined_date column may already exist - " . $e->getMessage());
+    }
+    // === MIGRATION: Add email column to existing employees table ===
+    try {
+        $pdo->exec("ALTER TABLE employees ADD COLUMN IF NOT EXISTS email VARCHAR(255) NULL AFTER joined_date");
+    } catch (Exception $e) {
+        error_log("Migration Note: email column may already exist - " . $e->getMessage());
     }
     // =======================================================================
             // Add birthday column if not exists
@@ -1997,30 +2021,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                         if ($user) {
-                // Success: Set Session and Redirect
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['employee_id'] = $user['employee_id'];
-                $_SESSION['name'] = $user['name'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['position'] = $user['position'] ?? 'Not Specified';
-                $_SESSION['department'] = $user['department'] ?? 'Not Specified';
-                logAudit($pdo, "Logged in", $user['employee_id']);
+                // === GENERATE 2FA CODE ===
+                $code = sprintf("%06d", mt_rand(0, 999999));
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
                 
-                // Redirect user to last visited admin module if available (cookie), otherwise default to overview
-                if($user['role'] === 'Admin') {
-                    $last = 'overview';
-                    if (!empty($_COOKIE['last_admin_view'])) {
-                        // basic whitelist to avoid injection
-                        $allowed = ['overview','attendance','reports','fingerprint','manualcheckin','overtime','employees','dayoff','leaveadministration','audittrail','departments','analytics','archives','holiday'];
-                        if (in_array($_COOKIE['last_admin_view'], $allowed)) {
-                            $last = $_COOKIE['last_admin_view'];
-                        }
-                    }
-                    $viewParam = '?view=' . $last;
-                } else {
-                    $viewParam = '?emp_view=overview';
+                // Store 2FA code in database
+                $stmt2fa = $pdo->prepare("INSERT INTO two_factor_codes (user_id, code, expires_at) VALUES (?, ?, ?)");
+                $stmt2fa->execute([$user['id'], $code, $expiresAt]);
+                
+                // Send email with 2FA code
+                $to = $user['email'] ?? '';
+                if (!empty($to)) {
+                    $subject = "Your Login Verification Code - Helport Traccurate";
+                    $message = "Hello {$user['name']},\n\nYour verification code is: {$code}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this code, please ignore this email.\n\nBest regards,\nHelport Traccurate Team";
+                    $headers = "From: noreply@helport.com\r\n";
+                    $headers .= "Reply-To: noreply@helport.com\r\n";
+                    $headers .= "X-Mailer: PHP/" . phpversion();
+                    @mail($to, $subject, $message, $headers);
                 }
-                header("Location: " . basename($_SERVER['PHP_SELF']) . $viewParam);
+                
+                // Store user data in session for 2FA verification
+                $_SESSION['pending_user_id'] = $user['id'];
+                $_SESSION['pending_employee_id'] = $user['employee_id'];
+                $_SESSION['pending_name'] = $user['name'];
+                $_SESSION['pending_role'] = $user['role'];
+                $_SESSION['pending_position'] = $user['position'] ?? 'Not Specified';
+                $_SESSION['pending_department'] = $user['department'] ?? 'Not Specified';
+                $_SESSION['pending_permissions'] = $user['permissions'] ?? '{}';
+                $_SESSION['pending_office_gps'] = $user['office_gps'] ?? null;
+                $_SESSION['requires_2fa'] = true;
+                
+                // Redirect to 2FA verification page
+                header("Location: " . basename($_SERVER['PHP_SELF']) . "?view=2fa_verify");
                 exit;
             } else {
                 // FAILURE: Store error in Session and Redirect
@@ -2036,7 +2068,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         }
     }
 
-        // === AJAX HANDLING (Original Logic) ===
+        // === AJAX HANDLING (Original Logic with 2FA) ===
         header('Content-Type: application/json');
         if (!validateCSRFToken($_POST['csrf_token'] ?? '')) {
             echo json_encode(["success" => false, "error" => "Invalid request."]);
@@ -2062,33 +2094,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         // Clear login attempts on success
         $pdo->prepare("DELETE FROM login_attempts WHERE ip = ?")->execute([$ip]);
         
-        // Set session variables
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['employee_id'] = $user['employee_id'];
-        $_SESSION['name'] = $user['name'];
-        $_SESSION['role'] = $user['role']; // ✅ Auto-detected from database
-        $_SESSION['position'] = $user['position'] ?? 'Not Specified';
-        $_SESSION['department'] = $user['department'] ?? 'Not Specified';
-        $_SESSION['permissions'] = json_decode($user['permissions'] ?? '{}', true);
-        $_SESSION['office_gps'] = $user['office_gps'] ?? null;
+        // === GENERATE 2FA CODE ===
+        $code = sprintf("%06d", mt_rand(0, 999999));
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
         
-        logAudit($pdo, "Logged in", $user['employee_id']);
-        if ($user['role'] === 'Admin') {
-            $last = 'overview';
-            if (!empty($_COOKIE['last_admin_view'])) {
-                $allowed = ['overview','attendance','reports','fingerprint','manualcheckin','overtime','employees','dayoff','leaveadministration','audittrail','departments','analytics','archives','holiday'];
-                if (in_array($_COOKIE['last_admin_view'], $allowed)) {
-                    $last = $_COOKIE['last_admin_view'];
-                }
-            }
-            $viewParam = '?view=' . $last;
-        } else {
-            $viewParam = '?emp_view=overview';
+        // Store 2FA code in database
+        $stmt2fa = $pdo->prepare("INSERT INTO two_factor_codes (user_id, code, expires_at) VALUES (?, ?, ?)");
+        $stmt2fa->execute([$user['id'], $code, $expiresAt]);
+        
+        // Send email with 2FA code
+        $to = $user['email'] ?? '';
+        if (!empty($to)) {
+            $subject = "Your Login Verification Code - Helport Traccurate";
+            $message = "Hello {$user['name']},\n\nYour verification code is: {$code}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this code, please ignore this email.\n\nBest regards,\nHelport Traccurate Team";
+            $headers = "From: noreply@helport.com\r\n";
+            $headers .= "Reply-To: noreply@helport.com\r\n";
+            $headers .= "X-Mailer: PHP/" . phpversion();
+            @mail($to, $subject, $message, $headers);
         }
+        
+        // Store user data in session for 2FA verification
+        $_SESSION['pending_user_id'] = $user['id'];
+        $_SESSION['pending_employee_id'] = $user['employee_id'];
+        $_SESSION['pending_name'] = $user['name'];
+        $_SESSION['pending_role'] = $user['role'];
+        $_SESSION['pending_position'] = $user['position'] ?? 'Not Specified';
+        $_SESSION['pending_department'] = $user['department'] ?? 'Not Specified';
+        $_SESSION['pending_permissions'] = $user['permissions'] ?? '{}';
+        $_SESSION['pending_office_gps'] = $user['office_gps'] ?? null;
+        $_SESSION['requires_2fa'] = true;
+        
         echo json_encode([
             "success" => true,
-            "redirect" => basename($_SERVER['PHP_SELF']) . $viewParam,
-            "role" => $user['role']
+            "requires_2fa" => true,
+            "message" => "Verification code sent to your email."
         ]);
     } else {
         // Failed login - track attempts
@@ -2109,6 +2148,139 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
         }
         exit;
     }
+    
+    // === HANDLE 2FA VERIFICATION ===
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['verify_2fa'])) {
+        header('Content-Type: application/json');
+        
+        if (!isPending2FA()) {
+            echo json_encode(["success" => false, "error" => "No pending verification."]);
+            exit;
+        }
+        
+        $code = trim($_POST['code'] ?? '');
+        $userId = $_SESSION['pending_user_id'];
+        
+        if (empty($code)) {
+            echo json_encode(["success" => false, "error" => "Please enter the verification code."]);
+            exit;
+        }
+        
+        if ($pdo) {
+            // Find valid, unused code
+            $stmt = $pdo->prepare("SELECT * FROM two_factor_codes WHERE user_id = ? AND code = ? AND is_used = 0 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1");
+            $stmt->execute([$userId, $code]);
+            $twoFactor = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($twoFactor) {
+                // Mark code as used
+                $pdo->prepare("UPDATE two_factor_codes SET is_used = 1 WHERE id = ?")->execute([$twoFactor['id']]);
+                
+                // Complete login - set session variables
+                $_SESSION['user_id'] = $_SESSION['pending_user_id'];
+                $_SESSION['employee_id'] = $_SESSION['pending_employee_id'];
+                $_SESSION['name'] = $_SESSION['pending_name'];
+                $_SESSION['role'] = $_SESSION['pending_role'];
+                $_SESSION['position'] = $_SESSION['pending_position'];
+                $_SESSION['department'] = $_SESSION['pending_department'];
+                $_SESSION['permissions'] = json_decode($_SESSION['pending_permissions'], true);
+                $_SESSION['office_gps'] = $_SESSION['pending_office_gps'];
+                unset($_SESSION['requires_2fa']);
+                unset($_SESSION['pending_user_id']);
+                unset($_SESSION['pending_employee_id']);
+                unset($_SESSION['pending_name']);
+                unset($_SESSION['pending_role']);
+                unset($_SESSION['pending_position']);
+                unset($_SESSION['pending_department']);
+                unset($_SESSION['pending_permissions']);
+                unset($_SESSION['pending_office_gps']);
+                
+                logAudit($pdo, "Logged in with 2FA", $_SESSION['employee_id']);
+                
+                // Determine redirect
+                if ($_SESSION['role'] === 'Admin') {
+                    $last = 'overview';
+                    if (!empty($_COOKIE['last_admin_view'])) {
+                        $allowed = ['overview','attendance','reports','fingerprint','manualcheckin','overtime','employees','dayoff','leaveadministration','audittrail','departments','analytics','archives','holiday'];
+                        if (in_array($_COOKIE['last_admin_view'], $allowed)) {
+                            $last = $_COOKIE['last_admin_view'];
+                        }
+                    }
+                    $viewParam = '?view=' . $last;
+                } else {
+                    $viewParam = '?emp_view=overview';
+                }
+                
+                echo json_encode([
+                    "success" => true,
+                    "redirect" => basename($_SERVER['PHP_SELF']) . $viewParam
+                ]);
+            } else {
+                // Check if code expired
+                $stmtExpired = $pdo->prepare("SELECT * FROM two_factor_codes WHERE user_id = ? AND code = ? AND expires_at <= NOW() ORDER BY created_at DESC LIMIT 1");
+                $stmtExpired->execute([$userId, $code]);
+                $expired = $stmtExpired->fetch(PDO::FETCH_ASSOC);
+                
+                if ($expired) {
+                    echo json_encode(["success" => false, "error" => "Verification code has expired. Please request a new one."]);
+                } else {
+                    echo json_encode(["success" => false, "error" => "Invalid verification code."]);
+                }
+            }
+        } else {
+            echo json_encode(["success" => false, "error" => "Database connection failed."]);
+        }
+        exit;
+    }
+    
+    // === HANDLE RESEND 2FA CODE ===
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_2fa'])) {
+        header('Content-Type: application/json');
+        
+        if (!isPending2FA()) {
+            echo json_encode(["success" => false, "error" => "No pending verification."]);
+            exit;
+        }
+        
+        $userId = $_SESSION['pending_user_id'];
+        
+        if ($pdo) {
+            // Get user email
+            $stmt = $pdo->prepare("SELECT email, name FROM employees WHERE id = ?");
+            $stmt->execute([$userId]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && !empty($user['email'])) {
+                // Invalidate old codes
+                $pdo->prepare("UPDATE two_factor_codes SET is_used = 1 WHERE user_id = ?")->execute([$userId]);
+                
+                // Generate new code
+                $code = sprintf("%06d", mt_rand(0, 999999));
+                $expiresAt = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+                
+                // Store new code
+                $stmt2fa = $pdo->prepare("INSERT INTO two_factor_codes (user_id, code, expires_at) VALUES (?, ?, ?)");
+                $stmt2fa->execute([$userId, $code, $expiresAt]);
+                
+                // Send email
+                $to = $user['email'];
+                $subject = "Your New Login Verification Code - Helport Traccurate";
+                $message = "Hello {$user['name']},\n\nYour new verification code is: {$code}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this code, please ignore this email.\n\nBest regards,\nHelport Traccurate Team";
+                $headers = "From: noreply@helport.com\r\n";
+                $headers .= "Reply-To: noreply@helport.com\r\n";
+                $headers .= "X-Mailer: PHP/" . phpversion();
+                @mail($to, $subject, $message, $headers);
+                
+                echo json_encode(["success" => true, "message" => "Verification code resent to your email."]);
+            } else {
+                echo json_encode(["success" => false, "error" => "No email address found for this account."]);
+            }
+        } else {
+            echo json_encode(["success" => false, "error" => "Database connection failed."]);
+        }
+        exit;
+    }
+    
     // === HANDLE LOGOUT ===
     if (isset($_GET['logout'])) {
         if (isset($_SESSION['employee_id']) && $pdo) {
