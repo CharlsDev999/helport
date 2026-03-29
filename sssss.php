@@ -5903,18 +5903,24 @@ body.landing-page::after {
         color: var(--text-muted);
     }
 
-    /* === MODALS === */
+    /* === MODALS - Glassmorphism Design === */
     .modal-content {
-        background: var(--gradient-card);
-        backdrop-filter: blur(16px);
-        border: 1px solid var(--border-glass);
-        border-radius: var(--radius-xl);
-        box-shadow: var(--shadow-lg);
+        background: linear-gradient(145deg, 
+            rgba(30, 41, 59, 0.75) 0%, 
+            rgba(15, 23, 42, 0.80) 50%,
+            rgba(10, 17, 28, 0.85) 100%);
+        backdrop-filter: blur(24px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 24px;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.40),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+            0 32px 80px rgba(0, 0, 0, 0.50);
     }
 
     .modal-header {
-        border-bottom: 1px solid var(--border-glass);
-        padding-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        padding-bottom: 18px;
         margin-bottom: 24px;
     }
 
@@ -11690,54 +11696,78 @@ grid-template-columns: 1fr;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(2, 6, 12, 0.70);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
     overflow: auto;
     }
 
     .modal-content {
-    background: var(--panel-bg);
+    background: linear-gradient(145deg, 
+        rgba(30, 41, 59, 0.75) 0%, 
+        rgba(15, 23, 42, 0.80) 50%,
+        rgba(10, 17, 28, 0.85) 100%);
     margin: 10% auto;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.40),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 32px 80px rgba(0, 0, 0, 0.50);
     max-width: 600px;
     max-height: 70vh;
     overflow-y: auto;
-    border: 1px solid var(--border-color);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
     }
 
     .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    padding-bottom: 18px;
     position: relative;
     }
 
     .modal-header h3 {
-    font-size: 18px;
-    color: var(--text-primary);
+    font-size: 20px;
+    color: #f0f7fb;
     margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     }
 
     .modal-header p {
-    font-size: 12px;
-    color: var(--text-muted);
+    font-size: 13px;
+    color: #a3b8c7;
     margin: 5px 0 0;
     }
 
     .close-modal {
-    color: var(--text-muted);
-    font-size: 28px;
+    color: #c5d4de;
+    font-size: 26px;
     font-weight: bold;
     cursor: pointer;
     margin-left: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .close-modal:hover, .close-modal:focus {
-    color: var(--text-primary);
+    color: #ffffff;
+    background: rgba(239, 68, 68, 0.18);
+    border-color: rgba(239, 68, 68, 0.50);
+    transform: translateY(-2px) rotate(90deg);
     }
 
     .employee-list-item {
@@ -13480,17 +13510,27 @@ grid-template-columns: 1fr;
     font-size: 16px;
     }
 
-    /* === MODERN EMPLOYEE MODAL STYLES === */
+    /* === MODERN EMPLOYEE MODAL STYLES - Glassmorphism Design === */
     .modern-employee-modal {
     max-width: 900px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    background: linear-gradient(145deg, 
+        rgba(30, 41, 59, 0.75) 0%, 
+        rgba(15, 23, 42, 0.80) 50%,
+        rgba(10, 17, 28, 0.85) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.40),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 32px 80px rgba(0, 0, 0, 0.50);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
     }
 
     .modern-employee-modal .modal-header {
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 20px;
-    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    padding-bottom: 18px;
+    margin-bottom: 24px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -13518,7 +13558,7 @@ grid-template-columns: 1fr;
     }
 
     .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
     }
 
     .form-label {
@@ -13526,25 +13566,26 @@ grid-template-columns: 1fr;
     margin-bottom: 8px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: #b4c6d4;
     }
 
     .form-input-modern {
     width: 100%;
-    padding: 12px 15px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-primary);
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    color: #eaf4f8;
     font-size: 14px;
-    transition: all 0.3s ease;
-    box-sizing: border-box; /* Fixes padding issues */
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-sizing: border-box;
+    min-height: 46px;
     }
 
     .form-input-modern:focus {
-    background: rgba(255,255,255,0.05);
-    border-color: var(--primary-accent);
-    box-shadow: 0 0 0 3px rgba(25, 211, 197, 0.1);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(0, 212, 170, 0.60);
+    box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.15), 0 0 20px rgba(0, 212, 170, 0.10);
     outline: none;
     }
 
@@ -13663,48 +13704,52 @@ grid-template-columns: 1fr;
     transform: translateY(-2px);
     }
 
-    /* Footer Buttons */
+    /* Footer Buttons - Glassmorphism Design */
     .modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 15px;
+    gap: 12px;
     padding-top: 20px;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid rgba(255, 255, 255, 0.10);
     }
 
     .btn-primary-modern {
-    background: var(--gradient-primary);
+    background: linear-gradient(135deg, #00D4AA 0%, #19D3C5 100%);
     color: #00110f;
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-weight: 650;
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: transform 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 46px;
     }
 
     .btn-primary-modern:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(25, 211, 197, 0.3);
+    box-shadow: 0 14px 35px rgba(0, 212, 170, 0.25), 0 4px 12px rgba(0, 212, 170, 0.15);
     }
 
     .btn-secondary-modern {
-    background: transparent;
-    color: var(--text-muted);
-    padding: 12px 30px;
-    border-radius: 8px;
-    font-weight: 600;
-    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.05);
+    color: #b4c6d4;
+    padding: 12px 24px;
+    border-radius: 14px;
+    font-weight: 650;
+    border: 1px solid rgba(255, 255, 255, 0.12);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 46px;
     }
 
     .btn-secondary-modern:hover {
-    border-color: var(--text-secondary);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.20);
+    color: #eaf4f8;
+    transform: translateY(-2px);
     }
 
     /* Mobile Responsiveness */
@@ -13729,6 +13774,35 @@ grid-template-columns: 1fr;
 
     /* === COOL SCAN MODAL STYLES === */
     .scan-modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.70); backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    z-index: 9999; display: none; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.3s ease;
+    }
+
+    .scan-modal-overlay.active { display: flex; opacity: 1; }
+
+    .scan-modal-card {
+    background: linear-gradient(145deg,
+        rgba(30, 41, 59, 0.85) 0%,
+        rgba(15, 23, 42, 0.90) 50%,
+        rgba(10, 17, 28, 0.95) 100%);
+    border: 1px solid rgba(25, 211, 197, 0.30);
+    width: 90%; max-width: 550px; border-radius: 24px; padding: 40px;
+    text-align: center;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.40),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 32px 80px rgba(0, 0, 0, 0.50),
+        0 0 60px rgba(25, 211, 197, 0.15);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
+    transform: scale(0.9); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative; overflow: hidden;
+    }
+
+    .scan-modal-overlay.active .scan-modal-card { transform: scale(1); }
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px);
     z-index: 9999; display: none; justify-content: center; align-items: center;
@@ -14216,29 +14290,46 @@ grid-template-columns: 1fr;
     font-size: 16px;
     }
 
-    /* Department Modal */
+    /* Department Modal - Glassmorphism Design */
     .department-modal {
     max-width: 600px;
+    background: linear-gradient(145deg, 
+        rgba(30, 41, 59, 0.75) 0%, 
+        rgba(15, 23, 42, 0.80) 50%,
+        rgba(10, 17, 28, 0.85) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.40),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+        0 32px 80px rgba(0, 0, 0, 0.50);
+    backdrop-filter: blur(24px) saturate(200%);
+    -webkit-backdrop-filter: blur(24px) saturate(200%);
     }
 
     .department-modal .modal-header {
-    background: var(--gradient-primary);
-    color: #00110f;
-    border-radius: 16px 16px 0 0;
-    padding: 25px;
+    background: transparent;
+    color: #f0f7fb;
+    border-radius: 0;
+    padding: 0 0 18px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    margin-bottom: 24px;
     }
 
     .department-modal .modal-header h3 {
-    color: #00110f;
+    color: #f0f7fb;
     font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     }
 
     .department-modal .modal-header p {
-    color: rgba(0, 17, 15, 0.8);
+    color: #a3b8c7;
+    font-size: 13px;
     }
 
     .department-modal .modal-body {
-    padding: 30px;
+    padding: 0 0 32px 0;
     }
 
     .department-form-row {
@@ -15685,115 +15776,130 @@ grid-template-columns: 1fr;
         border-bottom-right-radius: 14px;
     }
 
-    /* Modals / overlays */
+    /* Modals / overlays - Glassmorphism Design */
     .scan-modal-overlay, .modal-overlay {
-        background: rgba(0,0,0,0.58) !important;
-        backdrop-filter: blur(10px) !important;
+        background: rgba(0, 0, 0, 0.65) !important;
+        backdrop-filter: blur(12px) saturate(150%) !important;
+        -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
     }
     .modal {
-        background: rgba(5, 10, 16, 0.62) !important;
-        backdrop-filter: blur(8px) saturate(130%) !important;
-        -webkit-backdrop-filter: blur(8px) saturate(130%) !important;
+        background: rgba(2, 6, 12, 0.70) !important;
+        backdrop-filter: blur(16px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
     }
     .modal-content,
     .modern-employee-modal,
     .department-modal {
-        background: linear-gradient(165deg, rgba(16, 24, 34, 0.88) 0%, rgba(10, 17, 27, 0.84) 100%) !important;
-        border: 1px solid rgba(255, 255, 255, 0.10) !important;
-        border-radius: 20px !important;
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255,255,255,0.03) inset !important;
-        backdrop-filter: blur(20px) saturate(145%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(145%) !important;
-        padding: 26px !important;
+        background: linear-gradient(145deg, 
+            rgba(30, 41, 59, 0.75) 0%, 
+            rgba(15, 23, 42, 0.80) 50%,
+            rgba(10, 17, 28, 0.85) 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 24px !important;
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.40),
+            0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+            0 32px 80px rgba(0, 0, 0, 0.50) !important;
+        backdrop-filter: blur(24px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(200%) !important;
+        padding: 32px !important;
     }
     .modal-header,
     .modern-employee-modal .modal-header,
     .department-modal .modal-header {
         border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
-        margin-bottom: 18px !important;
-        padding-bottom: 14px !important;
+        margin-bottom: 24px !important;
+        padding-bottom: 18px !important;
     }
     .modal-header h3,
     .modern-employee-modal .modal-header h3,
     .department-modal .modal-header h3 {
-        color: #e8f3f7 !important;
+        color: #f0f7fb !important;
         font-weight: 700 !important;
-        letter-spacing: 0.2px;
+        letter-spacing: 0.3px;
+        font-size: 20px !important;
     }
     .modal-header p,
     .modern-employee-modal .modal-header p,
     .department-modal .modal-header p {
-        color: #9bb0bd !important;
+        color: #a3b8c7 !important;
+        font-size: 13px !important;
     }
     .close-modal {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px !important;
-        color: #b5c6cf !important;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease !important;
+        font-size: 26px !important;
+        color: #c5d4de !important;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     .close-modal:hover,
     .close-modal:focus {
         color: #ffffff !important;
-        background: rgba(239, 68, 68, 0.15) !important;
-        border-color: rgba(239, 68, 68, 0.45) !important;
-        transform: translateY(-1px);
+        background: rgba(239, 68, 68, 0.18) !important;
+        border-color: rgba(239, 68, 68, 0.50) !important;
+        transform: translateY(-2px) rotate(90deg);
     }
     .modal-body-grid {
-        gap: 22px !important;
-        margin-bottom: 18px !important;
+        gap: 26px !important;
+        margin-bottom: 22px !important;
     }
     .form-group {
-        margin-bottom: 14px !important;
+        margin-bottom: 18px !important;
     }
     .form-label {
-        color: #a7bcc8 !important;
+        color: #b4c6d4 !important;
         font-weight: 600 !important;
-        margin-bottom: 6px !important;
+        margin-bottom: 8px !important;
+        font-size: 13px !important;
     }
     .department-form-row label {
-        color: #a7bcc8 !important;
+        color: #b4c6d4 !important;
     }
     .modal-content :is(input, select, textarea, .form-input-modern) {
-        background: rgba(255, 255, 255, 0.04) !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        border-radius: 12px !important;
-        color: #eaf2f6 !important;
-        min-height: 42px;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
+        border-radius: 14px !important;
+        color: #eaf4f8 !important;
+        min-height: 46px;
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
     .modal-content :is(input, select, textarea, .form-input-modern):focus {
-        border-color: rgba(0, 212, 170, 0.55) !important;
-        box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.14) !important;
-        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(0, 212, 170, 0.60) !important;
+        box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.15), 0 0 20px rgba(0, 212, 170, 0.10) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
     }
     .modal-content :is(input, select, textarea, .form-input-modern)::placeholder {
-        color: rgba(208, 221, 229, 0.58) !important;
+        color: rgba(180, 198, 210, 0.55) !important;
     }
     .modal-footer {
         border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
-        padding-top: 16px !important;
-        margin-top: 8px !important;
-        gap: 10px !important;
+        padding-top: 20px !important;
+        margin-top: 12px !important;
+        gap: 12px !important;
     }
     .modal-footer :is(.btn-primary-modern, .btn-secondary-modern, .btn-upload, .btn-remove) {
-        min-height: 42px;
-        border-radius: 12px !important;
+        min-height: 46px;
+        border-radius: 14px !important;
         font-weight: 650 !important;
-        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        padding: 0 24px !important;
     }
     .modal-footer :is(.btn-primary-modern, .btn-upload):hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 28px rgba(0, 212, 170, 0.22) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 14px 35px rgba(0, 212, 170, 0.25), 0 4px 12px rgba(0, 212, 170, 0.15) !important;
     }
     .modal-footer :is(.btn-secondary-modern):hover {
-        transform: translateY(-1px);
-        background: rgba(255, 255, 255, 0.06) !important;
+        transform: translateY(-2px);
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.20) !important;
     }
 
     /* Reduced motion */
